@@ -1,0 +1,56 @@
+{% load static %}
+
+<div class="product__actions__wrapper">
+  <div class="product__actions">
+    {% if product.status.all|length %}
+    <p class="status">
+      {% for status in product.status.all %}
+        <span style="color: {{ status.hex }};">{{ status.name }}</span>
+      {% endfor %}
+    </p>
+    {% endif %}
+    <p class="name">{{ product.name }}</p>
+    <p class="code">Артикул: {{ product.code }}</p>
+    <p class="product_price {% if product.old_price > product.price %}discount{% endif %}">
+        <span class="currnet_price"><span class="number big_num">{{ product.price }}</span> RUB</span>
+        {% if product.old_price > product.price %}
+          <span class="old_price big_num">{{ product.old_price }} RUB</span>
+        {% endif %}
+    </p>
+    <div class="product__color">
+      <p class="title">Цвет</p>
+      
+      <div class="colors">
+        {% for color in product.get_variants %}
+          <a {% if color.pk == variant.pk %}class="active"{% endif %} 
+            data-tippy-content="{{ color.color.name }}" tabindex="0"
+            href="{{color.get_absolute_url }}" 
+            style="{% if color.color.image %}background-image: url({{ color.color.imgs.image.xs }}){% else %}background-color: {{ color.color.hex }}{% endif %};">
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="counter">
+      <button>-</button>
+      <input 
+        data-product_id="{{ product.pk }}" 
+        data-variant_id="{{ variant.pk }}" 
+        class="product_card_counter_quantity" 
+        min="1" max="{{ variant.in_stock }}" value="1" 
+        type="number">
+      <button>+</button>
+    </div>
+    <button class="action_button add_to_cart">
+      <img src="{% static 'img/ico/cart_add.svg' %}" alt="[]">
+      <span>Добавить в корзину</span>
+    </button>
+
+    
+    <a href="{% url 'shop:fast_buy' product.pk variant.pk %}" class="action_button one_click_buy">
+      <img src="{% static 'img/ico/wallet.svg' %}" alt="[]">
+      <span>Купить в 1 клик</span>
+    </a>
+  </div>
+    
+</div>
+

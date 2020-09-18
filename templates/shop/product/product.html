@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+    
+<!-- TITLE -->
+{% block title %}{% if product.meta_title %}{{ product.meta_title }}{% else %}{{ product.name }}{% endif %}{% endblock %}
+<!-- DESCRIPTION -->
+{% block meta_description %}{% if product.meta_descr %}{{ product.meta_descr }}{% else %}{% if product.description %}{{ product.description }}{% endif %}{% endif %}{% endblock %}
+
+{% block links %}
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/product.css' %}">
+
+
+{% endblock %}
+
+{% block content %}
+<div class="product_page">
+    <div class="content product__content">
+        <div class="about">
+            <div class="galery__wrapper">
+                {% include 'shop/product/product__galery.html' %}
+            </div>
+            <div class="product__info">
+                {% if product.description %}
+                <div class="description product__info__description">
+                    <p onclick="opendDescription(this)" class="title active h4"><span>Описание</span> <img src="{% static 'img/ico/arrow.svg' %}" alt=">"></p>
+                    <div class="text richtext">{{ product.description|safe }}</div>
+                </div>
+                {% endif %}
+                {% if product.preferences %}
+                <div class="preferences product__info__preferences">
+                    <p onclick="opendDescription(this)" class="title h4"><span>Характеристики</span> <img src="{% static 'img/ico/arrow.svg' %}" alt=">"></p>
+                    <div class="text richtext">{{ product.preferences|safe  }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% include 'shop/product/product__actions.html' %}
+    </div>
+    {% if recomendations|length %}
+        {% include 'shop/product/product__recomendations.html' %}
+    {% endif %}
+    
+</div>
+{% include 'shop/product/product__added_to_cart.html' %}
+{% endblock %}
+
+{% block js %}
+{% csrf_token %}
+<script src="https://unpkg.com/swiper/swiper-bundle.js"></script>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script src="{% static 'js/product/galery.js' %}"></script>
+<script src="{% static 'lib/sticky-sidebar-master/dist/sticky-sidebar.min.js' %}"></script>
+<script>
+    var sidebar = undefined
+
+    function sidebarInit() {
+        sidebar = new StickySidebar('.product__actions__wrapper', {
+            containerSelector: '.product__content',
+            innerWrapperSelector: '.product__actions',
+            topSpacing: 0,
+            bottomSpacing: 80,
+        });
+    }
+    
+    var mql = window.matchMedia('(max-width: 960px)');
+    if (mql.matches == false) { 
+        sidebarInit() 
+    }
+
+
+    function screenTest(e) {
+        if (e.matches && window['sidebar'] != undefined) {
+            console.log('< 960');
+            sidebar.destroy()
+        } else {
+            console.log('> 960');
+            sidebarInit()
+        }
+    }
+    mql.addListener(screenTest);
+
+</script>
+<script>
+
+ 
+    
+    const recomendations = new Swiper('.recomendation_list', {
+        loop: false,
+        slidesPerView: 5,
+        spaceBetween: 16,
+        navigation: {
+            nextEl: '.recomendations-next',
+            prevEl: '.recomendations-prev',
+        },
+        breakpoints: {
+            // when window width is >= 320px
+            1600: {
+                slidesPerView: 5,
+            },
+            1240: {
+                slidesPerView: 4,
+            },
+            960: {
+                slidesPerView: 3,
+            },
+            // when window width is >= 480px
+            0: {
+                slidesPerView: 2.2,
+                spaceBetween: 8,
+            },
+           
+        }
+})
+</script>
+<script>
+    const addToCartButton = document.querySelector('.add_to_cart')
+    addToCartButton.onclick = (e) => {
+        let input = document.querySelector('.product_card_counter_quantity') 
+        AddToCart(input)
+        popupOpen('.product_added_to_cart')
+    }
+</script>
+<script src="{% static 'lib/popup.js' %}"></script>
+<script>
+     function divStatus(parent, active=false) {
+        let title = parent.querySelector('.title')
+        let text = parent.querySelector('.text')
+        if (active) {
+            title.classList.add('active')
+            text.style.height = text.scrollHeight + 'px'
+        } else {
+            title.classList.remove('active')
+            text.style.height = 0
+        }
+    }
+    function opendDescription(obj) {
+        let parent = obj.parentNode
+        let block = parent.parentNode
+        
+        
+        if (obj.classList.contains('active')) {
+            divStatus(parent, active=false)
+        } else {
+            for (let div of block.children) {divStatus(div)}
+            divStatus(parent, active=true)
+            
+        }
+        
+    }
+
+
+</script>
+<script>
+
+    function playInitial() {
+        for (let play of document.querySelectorAll('.play')) {
+            let img =   play.parentElement.querySelector('.product_slider_image')
+            let video = play.parentElement.querySelector('video')
+            if (img) {
+                img.src = img.dataset.preview
+            } else if (video) {
+                video.pause()
+                video.controls = false
+            }
+            play.classList.add('active')
+        }
+    }
+    for (let play of document.querySelectorAll('.play')) {
+        play.onclick = () => {
+            let img =   play.parentElement.querySelector('.product_slider_image')
+            let video = play.parentElement.querySelector('video')
+
+            if (img) {
+                img.src = img.dataset.src
+            } else if (video) {
+                video.play()
+                video.controls = true
+            }
+            play.classList.remove('active')
+        }
+    }
+</script>
+{% endblock %}
